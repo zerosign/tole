@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	SEP_DOT = "."
+	SeparatorDot = "."
 )
 
 var (
@@ -54,7 +54,7 @@ func (v Version) Format() string {
 func ParseVersion(v string) (Version, error) {
 	var err error
 	data := make([]int, 0)
-	for _, v := range strings.Split(v, SEP_DOT) {
+	for _, v := range strings.Split(v, SeparatorDot) {
 		value, err := strconv.Atoi(v)
 		if err != nil {
 			return emptyVersion, err

@@ -33,11 +33,11 @@ var (
 				os.Exit(1)
 			}
 
-			if len(sources) == 0 {
+			if sources.IsEmpty() {
 				log.Fatal("no sources detected.")
 			} else {
 				// assert(len(sources) == len(manifest.Sources()))
-				if len(sources) == len(manifest.Sources()) {
+				if sources.Size() == len(manifest.Sources()) {
 					log.Fatal("sources declared in manifest should be equals to sources factories")
 				}
 				log.Print("no errors detected, most sources are contactable")

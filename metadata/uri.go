@@ -1,8 +1,9 @@
 package metadata
 
 import (
-	"github.com/zerosign/tole/base"
 	"net/url"
+
+	"github.com/zerosign/tole/base"
 )
 
 var (
@@ -25,11 +26,7 @@ func (u LimitedURI) URL() url.URL {
 }
 
 func (u LimitedURI) IsLocal() bool {
-	LOCAL_SCHEMES.Contains(u.scheme.Base())
-}
-
-func (u LimitedURI) Lists() []LimitedURI {
-
+	return LOCAL_SCHEMES.Contains(u.scheme.Base())
 }
 
 // ParseURI : parse raw uri string into limited form of uri.
@@ -48,5 +45,5 @@ func ParseURI(rawuri string) (LimitedURI, error) {
 		return LimitedURI{}, err
 	}
 
-	return LimitedURI{scheme, uri}, nil
+	return LimitedURI{scheme, *uri}, nil
 }
