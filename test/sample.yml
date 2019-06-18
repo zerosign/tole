@@ -1,0 +1,18 @@
+---
+kind: ConfigManifest
+version: 0.1
+sources:
+  team01-vault: vault+https://cluster01.company.internal/v1.1/company/team01
+  team02-vault: vault+https://cluster01.company.internal/v1.1/company/team02
+  local-env: dotenv+rel://.env
+aliases:
+  team01-staging: team01-vault://kv/project_01/stg
+mounts:
+  - source: team01-vault://database.yml.tmpl
+    target: file+rel://config/database.yml?uid=<uid>&gid=<gid>&mode=<mode>
+  - source: file+rel://template/database.yml.tmpl
+    target: file+rel://config/database.yml?uid=<uid>
+  - source: local-env://
+    target: env://
+  - source: file+rel://template/env.tmpl
+    target: env://
