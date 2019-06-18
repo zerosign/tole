@@ -17,6 +17,9 @@ type PathLike interface {
 	Traverse() TraverseFn
 }
 
+// Resolve : Generic Resolve function that dispatch its call to PathLike interface.
+//
+//
 func Resolve(plike PathLike, path string) (GlobPath, error) {
 	info, err := plike.Stat()(path)
 

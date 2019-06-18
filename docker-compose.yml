@@ -1,0 +1,147 @@
+version: '3'
+services:
+  vault-etcd:
+    image: 'vault:latest'
+    ports:
+      - "8200:8200"
+    volumes:
+      - .docker/volumes/vault-etcd/file:/vault/file:rw
+      - .docker/volumes/vault-etcd/config:/vault/config:rw
+    entrypoint:
+      - vault
+      - server
+      - -config=/vault/config/vault.hcl
+    depends_on:
+      - etcd0
+      - etcd1
+      - etcd2
+      - etcd-grpc-proxy
+  # TODO: create docker image that contains vault + curl
+  vault-client:
+    image: 'vault:latest'
+    volumes:
+      - .docker/volumes/vault/secrets:/secrets:rw
+      - .docker/volumes/vault/policies:/policies:z
+      - .docker/tools/vault-operator.sh:/usr/bin/vault-operator.sh:z
+    depends_on:
+      - vault-etcd
+    command:
+      - /usr/bin/vault-operator.sh
+      - auto-init
+  etcd0:
+    image: 'quay.io/coreos/etcd'
+    ports:
+      - 2379
+    volumes:
+      - .docker/volumes/etcd0/data:/var/etcd/data
+    command:
+      - /usr/local/bin/etcd
+      - -name
+      - etcd0
+      - --data-dir
+      - /var/etcd/data
+      - -advertise-client-urls
+      - http://etcd0:2379
+      - -listen-client-urls
+      - http://0.0.0.0:2379
+      - -initial-advertise-peer-urls
+      - http://etcd0:2380
+      - -listen-peer-urls
+      - http://0.0.0.0:2380
+      - -initial-cluster
+      - etcd0=http://etcd0:2380,etcd1=http://etcd1:2380,etcd2=http://etcd2:2380
+  etcd1:
+    image: 'quay.io/coreos/etcd'
+    ports:
+      - 2379
+    volumes:
+      - .docker/volumes/etcd1/data:/var/etcd/data
+    command:
+      - /usr/local/bin/etcd
+      - -name
+      - etcd1
+      - --data-dir
+      - /var/etcd/data
+      - -advertise-client-urls
+      - http://etcd1:2379
+      - -listen-client-urls
+      - http://0.0.0.0:2379
+      - -initial-advertise-peer-urls
+      - http://etcd1:2380
+      - -listen-peer-urls
+      - http://0.0.0.0:2380
+      - -initial-cluster
+      - etcd0=http://etcd0:2380,etcd1=http://etcd1:2380,etcd2=http://etcd2:2380
+  etcd2:
+    image: 'quay.io/coreos/etcd'
+    ports:
+      - 2379
+    volumes:
+      - .docker/volumes/etcd2/data:/var/etcd/data
+    command:
+      - /usr/local/bin/etcd
+      - -name
+      - etcd2
+      - --data-dir
+      - /var/etcd/data
+      - -advertise-client-urls
+      - http://etcd2:2379
+      - -listen-client-urls
+      - http://0.0.0.0:2379
+      - -initial-advertise-peer-urls
+      - http://etcd2:2380
+      - -listen-peer-urls
+      - http://0.0.0.0:2380
+      - -initial-cluster
+      - etcd0=http://etcd0:2380,etcd1=http://etcd1:2380,etcd2=http://etcd2:2380
+  etcd-grpc-proxy:
+    image: 'quay.io/coreos/etcd'
+    ports:
+      - 2379
+    command:
+      - /usr/local/bin/etcd
+      - grpc-proxy
+      - start
+      - --endpoints=etcd0,etcd1,etcd2
+      - --listen-addr=0.0.0.0:2379
+    depends_on:
+      - etcd0
+      - etcd1
+      - etcd2
+  consul-agent0: &consul-agent
+    image: consul:latest
+    command:
+      - agent
+      - -retry-join
+      - consul-server-bootstrap
+      - -client
+      - 0.0.0.0
+  consul-agent1:
+    <<: *consul-agent
+  consul-agent2:
+    <<: *consul-agent
+  consul-server0: &consul-server
+    <<: *consul-agent
+    command:
+      - agent
+      - -server
+      - -retry-join
+      - consul-server-bootstrap
+      - -client
+      - 0.0.0.0
+  consul-server1:
+    <<: *consul-server
+  consul-server-bootstrap:
+    <<: *consul-agent
+    ports:
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:8600"
+      - "8600:8600/udp"
+    command:
+      - agent
+      - -server
+      - -bootstrap-expect 3
+      - -ui
+      - -client
+      - 0.0.0.0
