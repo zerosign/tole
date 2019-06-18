@@ -104,3 +104,6 @@ tags
 # End of https://www.gitignore.io/api/emacs,vim,visualstudiocode,go
 tole
 graph.png
+.docker/volumes/etcd0/data
+.docker/volumes/etcd1/data
+.docker/volumes/etcd2/data
