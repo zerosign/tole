@@ -17,7 +17,6 @@ services:
       - etcd0
       - etcd1
       - etcd2
-      - etcd-grpc-proxy
   # TODO: create docker image that contains vault + curl
   vault-client:
     image: 'vault:latest'
@@ -25,11 +24,14 @@ services:
       - .docker/volumes/vault/secrets:/secrets:rw
       - .docker/volumes/vault/policies:/policies:z
       - .docker/tools/vault-operator.sh:/usr/bin/vault-operator.sh:z
+    env_file:
+      - .docker/volumes/vault/config.env
     depends_on:
       - vault-etcd
-    # command:
-    #   - /usr/bin/vault-operator
-    #   - auto-init
+    command:
+      - /usr/bin/vault-operator
+      - auto-init
+      - http://vault-etcd:8200
   etcd0:
     image: 'quay.io/coreos/etcd'
     ports:

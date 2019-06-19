@@ -6,4 +6,4 @@ VERSION  ?= $(strip $(shell git show -q --format=%h))
 all: build
 
 build:
-	docker build -t $(REGISTRY)/$(ORG)/$(PROJECT):$(VERSION) .
+	docker build -t $(REGISTRY)/$(ORG)/$(PROJECT):$(VERSION) . --no-cache
