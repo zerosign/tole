@@ -7,6 +7,8 @@ services:
     volumes:
       - .docker/volumes/vault-etcd/file:/vault/file:rw
       - .docker/volumes/vault-etcd/config:/vault/config:rw
+    cap_add:
+      - IPC_LOCK
     entrypoint:
       - vault
       - server
@@ -25,9 +27,9 @@ services:
       - .docker/tools/vault-operator.sh:/usr/bin/vault-operator.sh:z
     depends_on:
       - vault-etcd
-    command:
-      - /usr/bin/vault-operator.sh
-      - auto-init
+    # command:
+    #   - /usr/bin/vault-operator
+    #   - auto-init
   etcd0:
     image: 'quay.io/coreos/etcd'
     ports:
@@ -102,7 +104,7 @@ services:
       - /usr/local/bin/etcd
       - grpc-proxy
       - start
-      - --endpoints=etcd0,etcd1,etcd2
+      - --endpoints=etcd0:2380,etcd1:2380,etcd2:2380
       - --listen-addr=0.0.0.0:2379
     depends_on:
       - etcd0

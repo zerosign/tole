@@ -6,12 +6,15 @@ GO_EXISTS    := $(shell command -v go 2> /dev/null)
 # VERSION    ?= $(strip $(shell git describe --tags))
 VERSION      ?= $(strip $(shell git show -q --format=%h))
 
-.PHONY: clean build test
+.PHONY: clean build test doc clean-compose tools build-compose
 
-all: compile test build doc
+all: compile test build doc tools
 
 clean:
 	go clean
+
+tools:
+	find .docker/images -name "Makefile" -exec make -f {} \;
 
 compile:
 ifndef GO_EXISTS
@@ -33,6 +36,17 @@ build:
 
 push:
 	docker push $(REGISTRY)/$(ORG)/repo/$(PROJECT):$(VERSION)
+
+release:
+	docker tag $(REGISTRY)/$(ORG)/repo/$(PROJECT):latest
+	docker push $(REGISTRY)/$(ORG)/repo/$(PROJECT):latest
+
+build-compose:
+	docker-compose up --no-start
+
+clean-compose:
+	docker-compose down
+	sudo rm -rf .docker/volumes/{etcd0,etcd1,etcd2}/data/*
 
 doc:
 ifndef GO_EXISTS
