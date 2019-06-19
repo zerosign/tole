@@ -107,3 +107,4 @@ graph.png
 .docker/volumes/etcd0/data
 .docker/volumes/etcd1/data
 .docker/volumes/etcd2/data
+.docker/volumes/vault/secrets
