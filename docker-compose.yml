@@ -37,7 +37,7 @@ services:
     ports:
       - 2379
     volumes:
-      - .docker/volumes/etcd0/data:/var/etcd/data
+      - etcd0:/var/etcd/data
     command:
       - /usr/local/bin/etcd
       - -name
@@ -59,7 +59,7 @@ services:
     ports:
       - 2379
     volumes:
-      - .docker/volumes/etcd1/data:/var/etcd/data
+      - etcd1:/var/etcd/data
     command:
       - /usr/local/bin/etcd
       - -name
@@ -81,7 +81,7 @@ services:
     ports:
       - 2379
     volumes:
-      - .docker/volumes/etcd2/data:/var/etcd/data
+      - etcd2:/var/etcd/data
     command:
       - /usr/local/bin/etcd
       - -name
@@ -149,3 +149,8 @@ services:
       - -ui
       - -client
       - 0.0.0.0
+
+volumes:
+  etcd0:
+  etcd1:
+  etcd2:
