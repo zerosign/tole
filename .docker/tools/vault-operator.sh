@@ -52,7 +52,7 @@ function secrets() {
 
 function root() {
     secrets
-    ROOT_TOKEN=${SECRETS[7]}
+    ROOT_TOKEN=${SECRETS[5]}
 }
 
 #
@@ -89,12 +89,17 @@ function policy-init() {
     POLICES=($(find $POLICY_PATH -name "*.hcl" -type f))
     for path in "${POLICES[@]}"; do
         echo $path
-
+        policy=$(echo $path | awk -F"/" '{ print $NF }' | tr "_" " " | tr "." " " | awk -F" " '{ print $2 }')
+        policy-exists $1 $policy
+        if [ "$POLICY_EXISTS" = "404" ] || [ "$POLICY_EXISTS" = "400" ]; then
+            vault policy write -address $1 $policy $path
+        fi
     done
 }
 
 function policy-exists() {
-    POLICY_EXIST=$(curl -s -o /dev/null -w "%{http_code}" -H "X-Vault-Token: $(vault print token)" $1/v1/sys/policies/acl/$2)
+    TOKEN=$(vault print token)
+    POLICY_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" -H "X-Vault-Token: $TOKEN" $1/v1/sys/policies/acl/$2)
 }
 
 function auto-init() {
@@ -102,12 +107,20 @@ function auto-init() {
 
     case $STATUS in
         "503")
-            unseal $1
+            secrets
+            root
+            unseal $1 $SECRETS
+            login $1 $ROOT_TOKEN
+            policy-init $1
             ;;
         "501")
             init $1
             secrets
+            root
             unseal $1 $SECRETS
+            echo "root-token" $ROOT_TOKEN
+            login $1 $ROOT_TOKEN
+            policy-init $1
             ;;
         *)
             echo -n "everything is good :))"
@@ -131,6 +144,17 @@ case $1 in
         login $2 $ROOT_TOKEN
         ;;
     policy-init)
+        root
+        policy-init $2
+        ;;
+    root)
+        root
+        echo $ROOT_TOKEN
+        ;;
+    policy-exists)
+        root
+        policy-exists $2 $3
+        echo $POLICY_EXISTS
         ;;
     unseal)
         secrets

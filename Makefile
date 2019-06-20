@@ -45,8 +45,7 @@ build-compose:
 	docker-compose up --no-start
 
 clean-compose:
-	docker-compose down
-	sudo rm -rf .docker/volumes/{etcd0,etcd1,etcd2}/data/*
+	docker-compose down -v
 
 doc:
 ifndef GO_EXISTS

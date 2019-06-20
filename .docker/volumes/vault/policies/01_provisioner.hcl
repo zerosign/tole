@@ -22,7 +22,7 @@ path "sys/policies/acl"
   capabilities = ["read"]
 }
 
-# Create and manage ACL policies
+# Create and manage ACL policies via API & UI
 path "sys/policies/acl/*"
 {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
@@ -31,23 +31,5 @@ path "sys/policies/acl/*"
 # List, create, update, and delete key/value secrets
 path "secret/*"
 {
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-
-# Manage secret engines
-path "sys/mounts/*"
-{
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-
-# List existing secret engines.
-path "sys/mounts"
-{
-  capabilities = ["read"]
-}
-
-# Read health checks
-path "sys/health"
-{
-  capabilities = ["read", "sudo"]
+  capabilities = ["create", "read", "update", "delete", "list"]
 }
