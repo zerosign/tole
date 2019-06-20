@@ -14,7 +14,7 @@ clean:
 	go clean
 
 tools:
-	find .docker/images -name "Makefile" -exec make -f {} \;
+	cd .docker/images/vault-operator && make
 
 compile:
 ifndef GO_EXISTS
