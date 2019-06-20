@@ -18,12 +18,11 @@ services:
       - etcd1
       - etcd2
   # TODO: create docker image that contains vault + curl
-  vault-client:
-    image: 'vault:latest'
+  vault-operator:
+    image: 'docker.pkg.github.com/zerosign/repo/tole/vault-operator:latest'
     volumes:
       - .docker/volumes/vault/secrets:/secrets:rw
-      - .docker/volumes/vault/policies:/policies:z
-      - .docker/tools/vault-operator.sh:/usr/bin/vault-operator.sh:z
+      - .docker/volumes/vault/policies:/policies:rw
     env_file:
       - .docker/volumes/vault/config.env
     depends_on:

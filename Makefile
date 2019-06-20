@@ -16,6 +16,9 @@ clean:
 tools:
 	cd .docker/images/vault-operator && make
 
+tools-release:
+	cd .docker/images/vault-operator && make release
+
 compile:
 ifndef GO_EXISTS
 	docker container run  -v $(CURRENT_DIR):"/builder/$(PROJECT)" -w "/builder/$(PROJECT)" -it golang:latest go build
@@ -38,7 +41,7 @@ push:
 	docker push $(REGISTRY)/$(ORG)/repo/$(PROJECT):$(VERSION)
 
 release:
-	docker tag $(REGISTRY)/$(ORG)/repo/$(PROJECT):latest
+	docker tag $(REGISTRY)/$(ORG)/repo/$(PROJECT):$(VERSION) $(REGISTRY)/$(ORG)/repo/$(PROJECT):latest
 	docker push $(REGISTRY)/$(ORG)/repo/$(PROJECT):latest
 
 build-compose:
