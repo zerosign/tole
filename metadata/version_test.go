@@ -2,17 +2,65 @@ package metadata
 
 import (
 	"testing"
-
-	"gotest.tools/assert"
 )
 
-func TestSimpleVersionParsing(t *testing.T) {
-	var version Version
-	var expected = Version{[]int{1, 1, 0}}
+func TestParseFullVersion(t *testing.T) {
+	version, err := ParseVersion("0.0.1")
 
-	if version, err := ParseVersion("1.1.0"); err != nil {
-		t.Errorf("error occured when parsing, expected no error")
-	} else {
-		assert.DeepEqual(t, version, expected)
+	if err != nil {
+		t.Error(err)
 	}
+
+	expected := []int{0, 0, 1}
+	expectedVersion := versionFromIntSlice(expected)
+
+	for ii := 0; ii < len(version.inner); ii += 1 {
+		if version.inner[ii] != expected[ii] {
+			t.Errorf(
+				"expected value for idx %d should be %d but got %d",
+				ii,
+				expected[ii],
+				version.inner[ii],
+			)
+		}
+	}
+
+	if !version.Equal(expectedVersion) {
+		t.Errorf(
+			"expected version should be %v but got %v",
+			expectedVersion,
+			version,
+		)
+	}
+}
+
+func TestParsePartialVersion(t *testing.T) {
+	version, err := ParseVersion("0.1")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	expected := []int{0, 1, 0}
+	expectedVersion := versionFromIntSlice(expected)
+
+	for ii := 0; ii < len(version.inner); ii += 1 {
+		if version.inner[ii] != expected[ii] {
+			t.Errorf(
+				"expected value for idx %d should be %d but got %d",
+				ii,
+				expected[ii],
+				version.inner[ii],
+			)
+		}
+	}
+
+	if !version.Equal(expectedVersion) {
+		t.Errorf(
+			"expected version should be %v but got %v",
+			expectedVersion,
+			version,
+		)
+	}
+
 }

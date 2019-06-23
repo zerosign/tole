@@ -25,6 +25,13 @@ func (s Scheme) Extension() string {
 	return s[1]
 }
 
+// Equal : Check whether current Scheme are equal to other Scheme
+//
+//
+func (s Scheme) Equal(other Scheme) bool {
+	return s.Base() == other.Base() && s.Extension() == other.Extension()
+}
+
 // ParseScheme : parse scheme for given string scheme
 //
 // returns actual scheme if size is between 0 to 2

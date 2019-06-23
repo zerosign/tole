@@ -1,13 +1,12 @@
 package metadata
 
 import (
-	"net/url"
-
 	"github.com/zerosign/tole/base"
+	"net/url"
 )
 
 var (
-	LOCAL_SCHEMES = base.MakeStrSet(
+	LocalSchemes = base.MakeStrSet(
 		[]string{"local", "dotenv"},
 	)
 )
@@ -26,7 +25,7 @@ func (u LimitedURI) URL() url.URL {
 }
 
 func (u LimitedURI) IsLocal() bool {
-	return LOCAL_SCHEMES.Contains(u.scheme.Base())
+	return LocalSchemes.Contains(u.scheme.Base())
 }
 
 // ParseURI : parse raw uri string into limited form of uri.
