@@ -1,13 +1,12 @@
 package source
 
 import (
-	"github.com/zerosign/tole/base"
 	md "github.com/zerosign/tole/metadata"
 
 	"sync"
 )
 
-type Credentials map[string]base.StringList
+type Credentials map[string][]string
 
 type OptionArgs map[string]interface{}
 

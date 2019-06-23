@@ -1,26 +1,9 @@
 package base
 
-import (
-	"errors"
-	"fmt"
-)
-
 type Value interface {
 	IsArray() bool
 	IsMap() bool
 	IsPrimitive() bool
-}
-
-func ArrayConvError(v Value) error {
-	return errors.New(fmt.Sprintf("can't convert to array from %#v", v))
-}
-
-func MapConvError(v Value) error {
-	return errors.New(fmt.Sprintf("can't convert to map from %#v", v))
-}
-
-func PrimitiveQueryError(v Value) error {
-	return errors.New(fmt.Sprintf("can't query primitive value %#v", v))
 }
 
 type SafeConvert interface {
@@ -87,6 +70,6 @@ func QueryValue(v Value, path string) (Value, error) {
 
 		return query(v)
 	} else {
-		return nil, errors.New(fmt.Sprintf("unknown type for %v", v))
+		return nil, UnknownTypeError(v)
 	}
 }
