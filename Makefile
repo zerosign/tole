@@ -22,8 +22,7 @@ tools-release:
 
 docker_lint:
 ifndef HADOLINT_EXISTS
-	docker container run -v $(CURRENT_DIR):"/project/$(PROJECT)" -it hadolint/hadolint:latest hadolint --config
-"/project/$(PROJECT)/.config/hadolint.yaml" "/project/$(PROJECT)/.docker/images/vault-operator/Dockerfile"
+	docker container run -v $(CURRENT_DIR):"/project/$(PROJECT)" -it hadolint/hadolint:latest hadolint --config "/project/$(PROJECT)/.config/hadolint.yaml" "/project/$(PROJECT)/.docker/images/vault-operator/Dockerfile"
 else
 	hadolint --config .config/hadolint.yaml .docker/images/vault-operator/Dockerfile
 endif
