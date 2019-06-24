@@ -1,0 +1,10 @@
+{{#each alookup "test" "databases"}}
+{{ this.env }}:
+  adapter: {{ this.adapter }}
+  encoding: utf8
+  reconnect: {{ this.reconnect }}
+  database: {{ this.database }}
+  pool: {{ this.pool }}
+  username: {{ this.username }}
+  password: {{ this.password }}
+{{/each}}
