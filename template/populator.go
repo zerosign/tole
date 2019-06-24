@@ -6,6 +6,7 @@ import (
 )
 
 type Operation []string
+
 type SourcePaths map[string][]Operation
 
 type Populator struct {
@@ -13,15 +14,15 @@ type Populator struct {
 	inner     SourcePaths
 }
 
-func NewPopulator() *Populator {
-	return &Populator{base.EmptyStrSet(), SourcePaths{}}
+func NewPopulator() Populator {
+	return Populator{base.EmptyStrSet(), SourcePaths{}}
 }
 
-func (p *Populator) Lists() SourcePaths {
+func (p Populator) Lists() SourcePaths {
 	return p.inner
 }
 
-func (p *Populator) VisitProgram(node *ast.Program) interface{} {
+func (p Populator) VisitProgram(node *ast.Program) interface{} {
 
 	for _, n := range node.Body {
 		n.Accept(p)
@@ -30,14 +31,14 @@ func (p *Populator) VisitProgram(node *ast.Program) interface{} {
 	return nil
 }
 
-func (p *Populator) VisitMustache(node *ast.MustacheStatement) interface{} {
+func (p Populator) VisitMustache(node *ast.MustacheStatement) interface{} {
 
 	node.Expression.Accept(p)
 
 	return nil
 }
 
-func (p *Populator) VisitBlock(node *ast.BlockStatement) interface{} {
+func (p Populator) VisitBlock(node *ast.BlockStatement) interface{} {
 
 	node.Expression.Accept(p)
 
@@ -52,7 +53,7 @@ func (p *Populator) VisitBlock(node *ast.BlockStatement) interface{} {
 	return nil
 }
 
-func (p *Populator) VisitPartial(node *ast.PartialStatement) interface{} {
+func (p Populator) VisitPartial(node *ast.PartialStatement) interface{} {
 
 	node.Name.Accept(p)
 
@@ -68,7 +69,7 @@ func (p *Populator) VisitPartial(node *ast.PartialStatement) interface{} {
 }
 
 // expressions
-func (p *Populator) VisitExpression(node *ast.Expression) interface{} {
+func (p Populator) VisitExpression(node *ast.Expression) interface{} {
 
 	node.Path.Accept(p)
 
@@ -117,13 +118,13 @@ func (p *Populator) VisitExpression(node *ast.Expression) interface{} {
 	return nil
 }
 
-func (p *Populator) VisitSubExpression(node *ast.SubExpression) interface{} {
+func (p Populator) VisitSubExpression(node *ast.SubExpression) interface{} {
 	node.Expression.Accept(p)
 	return nil
 }
 
 // miscellaneous
-func (p *Populator) VisitHash(node *ast.Hash) interface{} {
+func (p Populator) VisitHash(node *ast.Hash) interface{} {
 
 	for _, v := range node.Pairs {
 		v.Accept(p)
@@ -132,17 +133,17 @@ func (p *Populator) VisitHash(node *ast.Hash) interface{} {
 	return nil
 }
 
-func (p *Populator) VisitHashPair(node *ast.HashPair) interface{} {
+func (p Populator) VisitHashPair(node *ast.HashPair) interface{} {
 	node.Val.Accept(p)
 
 	return nil
 }
 
-func (p *Populator) VisitContent(node *ast.ContentStatement) interface{} { return nil }
-func (p *Populator) VisitComment(node *ast.CommentStatement) interface{} { return nil }
-func (p *Populator) VisitPath(node *ast.PathExpression) interface{}      { return nil }
+func (p Populator) VisitContent(node *ast.ContentStatement) interface{} { return nil }
+func (p Populator) VisitComment(node *ast.CommentStatement) interface{} { return nil }
+func (p Populator) VisitPath(node *ast.PathExpression) interface{}      { return nil }
 
 // literals
-func (p *Populator) VisitString(node *ast.StringLiteral) interface{}   { return nil }
-func (p *Populator) VisitBoolean(node *ast.BooleanLiteral) interface{} { return nil }
-func (p *Populator) VisitNumber(node *ast.NumberLiteral) interface{}   { return nil }
+func (p Populator) VisitString(node *ast.StringLiteral) interface{}   { return nil }
+func (p Populator) VisitBoolean(node *ast.BooleanLiteral) interface{} { return nil }
+func (p Populator) VisitNumber(node *ast.NumberLiteral) interface{}   { return nil }

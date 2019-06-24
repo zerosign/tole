@@ -7,7 +7,10 @@ import (
 )
 
 func TestPopulatorPopulateAst(t *testing.T) {
+
 	bytes, err := ioutil.ReadFile("../test/database.yml.tmpl")
+
+	t.Log("test")
 
 	if err != nil {
 		t.Error(err)
