@@ -10,8 +10,6 @@ func TestPopulatorPopulateAst(t *testing.T) {
 
 	bytes, err := ioutil.ReadFile("../test/database.yml.tmpl")
 
-	t.Log("test")
-
 	if err != nil {
 		t.Error(err)
 	}
@@ -22,11 +20,18 @@ func TestPopulatorPopulateAst(t *testing.T) {
 		t.Error(err)
 	}
 
-	populator := NewPopulator()
+	populator := NewPopulator([]string{"alookup", "lookup", "rlookup", "hlookup"})
 
-	r := ast.Accept(populator)
+	_ = ast.Accept(populator)
 
-	t.Logf("result: %v", r)
+	expected := SourcePaths{
+		"test": []Operation{[]string{"alookup", "databases"}},
+	}
 
-	t.Logf("variables: %v", populator.Lists())
+	result := populator.Lists()
+
+	if !result.Equal(expected) {
+		t.Errorf("lookup paths expected to be %v but got %v", expected, result)
+	}
+
 }
