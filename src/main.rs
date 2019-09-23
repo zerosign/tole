@@ -16,8 +16,8 @@ fn main() -> Result<()> {
     let matches = App::new("tole")
         .version(TOLE_VERSION)
         .author(AUTHOR)
-        .about("configuration & secrets management for microservice era")
-        .arg(Arg::with_name());
+        .about("configuration & secrets management for microservice era");
+    // .arg(Arg::with_name());
 
     // let (tx, rx) = unbounded();
 

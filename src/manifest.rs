@@ -1,17 +1,17 @@
-use serde::Deserialize;
+use crate::error::{ManifestError, OwnershipError};
 use lazy_static::lazy_static;
-
+use serde::Deserialize;
 use std::{
-    collections::{HashSet, HashMap},
+    borrow::Cow,
+    collections::{HashMap, HashSet},
     convert::{Infallible, TryFrom},
     fmt,
     fs::{self, Permissions as Perm},
     iter::FromIterator,
-    path::{PathBuf, Path},
-
+    os::unix::fs::PermissionsExt,
+    path::{Path, PathBuf},
 };
-use url::{Url, form_urlencoded::Parse as QueryPairs};
-use crate::error::{ManifestError, OwnershipError};
+use url::{form_urlencoded::Parse as QueryPairs, Url};
 
 lazy_static! {
     // registered locals protocols/schemes
@@ -37,7 +37,6 @@ pub enum ManifestKind {
     ConfigManifest,
 }
 
-
 #[derive(Debug, Deserialize)]
 pub struct Mount {
     source: String,
@@ -51,7 +50,6 @@ pub struct Ownership {
 }
 
 impl Ownership {
-
     #[inline]
     pub fn uid(&self) -> Option<usize> {
         self.uid
@@ -62,9 +60,9 @@ impl Ownership {
         self.gid
     }
 
-    #{inline]
-    pub fn mode(&self) -> Option<Perm> {
-        self.mode
+    #[inline]
+    pub fn mode(&self) -> Option<&Perm> {
+        self.mode.as_ref()
     }
 
     #[inline]
@@ -77,35 +75,37 @@ impl Ownership {
     }
 }
 
-impl TryFrom<QueryPairs> for Ownership {
+impl<'a> TryFrom<QueryPairs<'a>> for Ownership {
     type Error = OwnershipError;
 
     #[inline]
     fn try_from(pairs: QueryPairs) -> Result<Self, Self::Error> {
-
-        let mut uid : Option<usize> = None;
-        let mut gid : Option<usize> = None;
-        let mut mode : Option<Perm> = None;
+        let mut uid: Option<usize> = None;
+        let mut gid: Option<usize> = None;
+        let mut mode: Option<Perm> = None;
 
         for (key, value) in pairs {
-            match key {
+            match key.as_ref() {
                 "uid" => {
                     uid = Some(
-                        value.parse::<usize>()
-                            .map_err(PermissionError::ParseError)?
+                        value
+                            .parse::<usize>()
+                            .map_err(|_| OwnershipError::ParseError)?,
                     );
-                },
+                }
                 "gid" => {
                     gid = Some(
-                        value.parse::<usize>()
-                            .map_err(PermissionError::ParseError)?
+                        value
+                            .parse::<usize>()
+                            .map_err(|_| OwnershipError::ParseError)?,
                     );
-                },
+                }
                 "mode" => {
-                    mode = Some(
-                        Perm::from_mode(value.parse::<u8>()
-                                        .map_err(PermissionError::ParseError)?)
-                    );
+                    mode = Some(Perm::from_mode(
+                        value
+                            .parse::<u32>()
+                            .map_err(|_| OwnershipError::ParseError)?,
+                    ));
                 }
                 _ => {
                     // warning that key doesn't exists
@@ -135,7 +135,6 @@ impl LocalRef {
     fn is_relative(url: &Url) -> bool {
         url.scheme().ends_with("+rel")
     }
-
 }
 
 pub struct RemoteRef {
@@ -149,7 +148,7 @@ impl fmt::Debug for LocalRef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "FileRef {{ uid: {}, gid: {}, mode: {} }}",
+            "FileRef {{ uid: {:?}, gid: {:?}, mode: {:?} }}",
             self.owner.uid, self.owner.gid, self.owner.mode
         )
     }
@@ -178,10 +177,12 @@ impl PathRef {
 
     #[inline]
     fn is_recursive(url: &Url) -> bool {
-        url.query_pairs()
+        *url.query_pairs()
             .filter(|(k, _)| k == "recursive")
             .map(|(_, v)| v.parse::<bool>().unwrap_or(false))
-            .collect::<Vec<bool>>().first().unwrap_or(false);
+            .collect::<Vec<bool>>()
+            .first()
+            .unwrap_or(&false)
     }
 }
 
@@ -189,40 +190,44 @@ impl TryFrom<Url> for LocalRef {
     type Error = ManifestError;
 
     #[inline]
-    fn try_from(url: &Url) -> Result<Self, Self::Error> {
-        let path = if LocalRef::is_relative(url) {
+    fn try_from(url: Url) -> Result<Self, Self::Error> {
+        let path = if LocalRef::is_relative(&url) {
             // create absolute path from current relative path using
             // fs::canonicalize
-            fs::canonicalize(Path::new(format!("./{}", url.path())))
+            fs::canonicalize(Path::new(&format!("./{}", url.path())))
+                .map_err(Self::Error::IoError)?
+                .into()
         } else {
-            Path::new(url.path())
+            PathBuf::from(url.path())
         };
 
         // fetch ownership from url
-        let ownership = Ownership::try_from(url.query_pairs())?;
+        let ownership =
+            Ownership::try_from(url.query_pairs()).map_err(ManifestError::OwnershipError)?;
 
         Ok(LocalRef {
-            inner: path,
+            inner: path.into(),
             owner: ownership,
-            recursive: PathRef::is_recursive(url),
+            recursive: PathRef::is_recursive(&url),
         })
     }
 }
-
 
 impl TryFrom<Url> for RemoteRef {
     type Error = Infallible;
 
     #[inline]
-    fn try_from(url: &Url) -> Result<Self, Self::Error> {
+    fn try_from(url: Url) -> Result<Self, Self::Error> {
+        // let options = HashMap::from_iter(url.query_pairs());
+        let options = HashMap::from_iter(url.query_pairs().into_owned());
+
         let path = Path::new(url.path());
-        let is_recursive = PathRef::is_recursive(url);
-        let options = HashMap::from_iter(url.query_pairs());
+        let is_recursive = PathRef::is_recursive(&url);
 
         Ok(RemoteRef {
-            inner: path,
+            inner: path.into(),
             options: options,
-            raw: url,
+            raw: url.clone(),
             recursive: is_recursive,
         })
     }
@@ -232,14 +237,14 @@ impl TryFrom<Url> for PathRef {
     type Error = ManifestError;
 
     #[inline]
-    fn try_from(url: &Url) -> Result<Self, Self::Error> {
+    fn try_from(url: Url) -> Result<Self, Self::Error> {
         // check whether mount-ref is path or url
-        if Self::is_local(url) {
-            LocalRef::try_from(url)
-                .map_err(ManifestError::OwnershipError)
+        if Self::is_local(&url) {
+            LocalRef::try_from(url).map(PathRef::LocalRef)
         } else {
             RemoteRef::try_from(url)
                 .map_err(|e| ManifestError::OwnershipError(OwnershipError::Infallible(e)))
+                .map(PathRef::RemoteRef)
         }
     }
 }
@@ -256,7 +261,7 @@ pub struct Manifest {
 #[cfg(test)]
 mod test {
 
-    use crate::manifest::{PathRef, Manifest};
+    use crate::manifest::{Manifest, PathRef};
     use std::{
         fs,
         io::{BufRead, BufReader, Read},
@@ -300,8 +305,8 @@ mod test {
                 .collect::<Vec<(String, String)>>()
         );
 
-        let ref = PathRef::try_from(parsed);
+        // let ref = PathRef::try_from(parsed);
 
-        println!("ref: {:?}", ref);
+        // println!("ref: {:?}", ref);
     }
 }
