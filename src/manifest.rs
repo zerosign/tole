@@ -2,11 +2,11 @@ use crate::error::{ManifestError, OwnershipError};
 use lazy_static::lazy_static;
 use serde::Deserialize;
 use std::{
-    borrow::Cow,
     collections::{HashMap, HashSet},
     convert::{Infallible, TryFrom},
     fmt,
     fs::{self, Permissions as Perm},
+    io,
     iter::FromIterator,
     os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
@@ -258,11 +258,22 @@ pub struct Manifest {
     mounts: Vec<Mount>,
 }
 
+impl Manifest {
+    #[inline]
+    pub fn from_reader<R>(r: R) -> Result<Manifest, ManifestError>
+    where
+        R: io::Read,
+    {
+        serde_yaml::from_reader(r).map_err(ManifestError::SerdeError)
+    }
+}
+
 #[cfg(test)]
 mod test {
 
     use crate::manifest::{Manifest, PathRef};
     use std::{
+        convert::TryFrom,
         fs,
         io::{BufRead, BufReader, Read},
         path::{Path, PathBuf},
@@ -286,27 +297,34 @@ mod test {
 
         let result: serde_yaml::Result<Manifest> = serde_yaml::from_reader(f);
 
-        println!("result: {:?}", result);
+        assert!(result.is_ok());
     }
 
     #[test]
     fn test_url_parsing() {
-        let sample_url = "file+rel://config/database.yml?uid=1&gid=20&mode=0444";
-        let parsed = Url::parse(sample_url).expect("can't parse the url");
+        let path: PathBuf = {
+            let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+            p.push("tests/sample_manifest.yml");
+            p.into()
+        };
+
+        let sample_url = format!(
+            "file+rel://{}?uid=1&gid=20&mode=0444",
+            path.to_str().unwrap(),
+        );
+
+        println!("sample_url: {:?}", sample_url);
+
+        let parsed = Url::parse(&sample_url).expect("can't parse the url");
 
         println!("result: {:?}", parsed);
 
         println!("scheme: {}", parsed.scheme());
-        println!(
-            "paths: {:?}",
-            parsed
-                .query_pairs()
-                .into_owned()
-                .collect::<Vec<(String, String)>>()
-        );
 
-        // let ref = PathRef::try_from(parsed);
+        let result = PathRef::try_from(parsed);
 
-        // println!("ref: {:?}", ref);
+        println!("result: {:?}", result);
+
+        assert!(result.is_ok());
     }
 }

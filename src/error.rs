@@ -12,4 +12,5 @@ pub enum ManifestError {
     // OwnershipError(OwnershipError),
     OwnershipError(OwnershipError),
     IoError(io::Error),
+    SerdeError(serde_yaml::Error),
 }

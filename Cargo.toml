@@ -3,6 +3,7 @@ name = "tole"
 version = "0.1.0"
 authors = ["zerosign <r1nlx0@gmail.com>"]
 edition = "2018"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,3 +16,17 @@ crossbeam-channel = "0.3.9"
 lazy_static = "1.4.0"
 petgraph = "0.4.13"
 url = "2.1.0"
+log = "0.4.8"
+env_logger = "0.6.2"
+
+[dev-dependencies]
+criterion = "0.3"
+flate2 = { version = "1.0", features = ["rust_backend"], default-features = false }
+tar = "0.4"
+
+[build-dependencies]
+built = "0.3"
+
+[[bin]]
+name = "tole"
+path = "bin/main.rs"
