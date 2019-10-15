@@ -301,6 +301,24 @@ mod test {
     }
 
     #[test]
+    fn test_url_parsing_relative() {
+        println!("current_dir: {:?}", std::env::current_dir());
+
+        let relative_url = format!(
+            "file+rel:///{}?uid=1&gid=20&mode0444",
+            "tests/sample_manifest.yml",
+        );
+
+        let parsed = Url::parse(&relative_url).expect("can't parse the url");
+
+        let result = PathRef::try_from(parsed);
+
+        println!("result: {:?}", result);
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
     fn test_url_parsing() {
         let path: PathBuf = {
             let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -309,18 +327,11 @@ mod test {
         };
 
         let sample_url = format!(
-            "file+rel://{}?uid=1&gid=20&mode=0444",
+            "file:///{}?uid=1&gid=20&mode=0444",
             path.to_str().unwrap(),
         );
 
-        println!("sample_url: {:?}", sample_url);
-
         let parsed = Url::parse(&sample_url).expect("can't parse the url");
-
-        println!("result: {:?}", parsed);
-
-        println!("scheme: {}", parsed.scheme());
-
         let result = PathRef::try_from(parsed);
 
         println!("result: {:?}", result);
