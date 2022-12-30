@@ -3,14 +3,13 @@ module github.com/zerosign/tole
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.20.2
+	github.com/aws/aws-sdk-go v1.33.0
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224
 	github.com/coreos/bbolt v1.3.3 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190617083831-1652836e9bdc // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
-	github.com/ewohltman/graphdot v0.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
@@ -22,7 +21,6 @@ require (
 	github.com/hashicorp/consul/api v1.1.0
 	github.com/hashicorp/vault/api v1.0.2
 	github.com/jonboulle/clockwork v0.1.0 // indirect
-	github.com/kisielk/godepgraph v0.0.0-20181003180210-9a9a3d47fba3 // indirect
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/prometheus/client_golang v1.0.0 // indirect
